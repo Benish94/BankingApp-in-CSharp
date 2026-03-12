@@ -1,21 +1,21 @@
 # 🏧 Bankautomat – C# Console Anwendung (.NET 8)
 
 Dieses Projekt ist eine **Simulation eines Bankautomaten** als **C# Console-Anwendung**.
-Es wurde als **Schulungsprojekt** entwickelt, um grundlegende Konzepte der Softwareentwicklung mit **.NET 8** zu demonstrieren.
+Es wurde als **Schulungs- und Lernprojekt** erstellt, um grundlegende Konzepte der Softwareentwicklung mit **.NET 8**, **C#**, **Unit Tests** und **Softwarearchitektur** zu demonstrieren.
 
-Der Automat ermöglicht:
+Der Automat unterstützt:
 
-* Anmeldung mit **Kontonummer und PIN**
+* Kontoanmeldung über **Kontonummer + PIN**
 * **automatische Kontoerstellung**, wenn eine Kontonummer noch nicht existiert
 * **Kontostand anzeigen**
 * **Geld einzahlen**
 * **Geld abheben**
 * **Zinsen gutschreiben**
-* automatische **Münzverteilung über einen Algorithmus**
-* **Kontosperre nach 3 falschen PIN-Versuchen**
-* Speicherung aller Daten in einer **JSON-Datei**
+* automatische **Münz- und Scheinverteilung über einen Greedy-Algorithmus**
+* Speicherung aller Konten in einer **JSON-Datei**
+* **automatisierte Tests mit xUnit**
 
-Zusätzlich besitzt das Programm eine **ASCII-basierte Oberfläche**, die einen echten Geldautomaten simuliert.
+Die Anwendung läuft vollständig über die **Console**.
 
 ---
 
@@ -31,38 +31,97 @@ Installation prüfen:
 dotnet --version
 ```
 
-Beispielausgabe:
+Beispiel:
 
+```text
+8.0.418
 ```
-8.0.xxx
-```
 
-Download falls nötig:
+Download:
 
-https://dotnet.microsoft.com/download
+https://dotnet.microsoft.com/download/dotnet/8.0
 
 ---
 
-# 🚀 Projekt starten
+# 📁 Projektstruktur
 
-Im Projektordner ausführen:
+```text
+Bankautomat
+│
+├── Bankautomat.sln
+├── global.json
+│
+├── Bankautomat
+│   ├── CoinMachine.csproj
+│   ├── Program.cs
+│   │
+│   ├── Controllers
+│   │   └── BankController.cs
+│   │
+│   ├── Services
+│   │   ├── BankService.cs
+│   │   └── InterestService.cs
+│   │
+│   ├── Interfaces
+│   │   ├── IBankService.cs
+│   │   ├── IInterestService.cs
+│   │   └── IStorage.cs
+│   │
+│   ├── Storage
+│   │   └── JsonStorage.cs
+│   │
+│   ├── Models
+│   │   ├── Account.cs
+│   │   └── CustomerType.cs
+│   │
+│   ├── Data
+│   │   └── CoinDefinitions.cs
+│   │
+│   ├── UI
+│   │   ├── AsciiATM.cs
+│   │   └── ConsoleMenu.cs
+│   │
+│   └── Utils
+│       └── InputValidator.cs
+│
+└── Bankautomat.Tests
+    ├── Bankautomat.Tests.csproj
+    └── BankServiceTests.cs
+```
+
+---
+
+# 🚀 Programm starten
+
+In den **Root-Ordner des Projekts wechseln**:
+
+```bash
+cd Bankautomat
+```
+
+Projekt bauen:
 
 ```bash
 dotnet build
-dotnet run
 ```
 
-Die Anwendung startet anschließend im Terminal.
+Programm starten:
+
+```bash
+dotnet run --project Bankautomat
+```
+
+Der Bankautomat startet anschließend im Terminal.
 
 ---
 
-# 🏧 Funktionsübersicht
+# 🏧 Nutzung des Bankautomaten
 
 ## Startmenü
 
-Beim Start erscheint das Hauptmenü des Automaten:
+Beim Start erscheint das Hauptmenü:
 
-```
+```text
 ┌──────────────────────────────┐
 │ 🏧 BANKAUTOMAT               │
 │                              │
@@ -78,55 +137,47 @@ Beim Start erscheint das Hauptmenü des Automaten:
 
 Der Benutzer gibt eine **8-stellige Kontonummer** ein.
 
-```
+```text
 Kontonummer (8 Ziffern): 12345678
 ```
 
-### Konto existiert nicht
+## Konto existiert nicht
 
-Wenn die Kontonummer noch nicht vorhanden ist:
+Falls das Konto noch nicht existiert:
 
-* wird automatisch ein **neues Konto erstellt**
-* Benutzer legt **Name und PIN fest**
+* neues Konto wird erstellt
+* Name wird abgefragt
+* eine **4-stellige PIN** wird festgelegt
 
-Beispiel:
-
-```
+```text
 ⚠ Konto nicht gefunden.
 Ein neues Konto wird erstellt.
 
 Name eingeben: Max
 PIN (4 Stellen): ****
 
-✅ Konto erfolgreich erstellt.
+✅ Konto erfolgreich erstellt
 ```
 
 ---
 
-### Konto existiert
+## Login
 
-Wenn das Konto existiert, erfolgt die **PIN-Abfrage**:
+Bei bestehenden Konten erfolgt die **PIN-Abfrage**.
 
-```
+```text
 PIN (4 Stellen): ****
 ```
 
-### Sicherheitsfunktion
-
-Nach **3 falschen PIN-Versuchen** wird das Konto gesperrt:
-
-```
-❌ Falsche PIN (3/3)
-❌ Konto wurde aus Sicherheitsgründen gesperrt
-```
+Nach **3 falschen PIN-Eingaben** wird das Konto gesperrt.
 
 ---
 
 # 💳 Kundenmenü
 
-Nach erfolgreichem Login erscheint das Kundenmenü:
+Nach erfolgreichem Login:
 
-```
+```text
 ┌──────────────────────────────┐
 │ 💳 Kundenmenü                │
 │                              │
@@ -142,76 +193,79 @@ Nach erfolgreichem Login erscheint das Kundenmenü:
 
 # 💰 Kontostand
 
-Der Kontostand wird als **Münztabelle** angezeigt:
+Der Kontostand wird als **Münz- und Scheinübersicht** angezeigt.
 
-```
+Beispiel:
+
+```text
 Wert      | Anzahl
 -------------------
-2.00 €    |      3
-1.00 €    |      1
-0.50 €    |      1
-0.20 €    |      1
-0.10 €    |      0
-0.05 €    |      0
-0.02 €    |      0
-0.01 €    |      0
+100 €     | 1
+50 €      | 1
+20 €      | 1
+10 €      | 1
+5 €       | 1
+2 €       | 1
+1 €       | 0
+0.50 €    | 1
+0.20 €    | 1
+0.05 €    | 1
+0.01 €    | 1
 -------------------
-Gesamt: 7.70 €
+Gesamt: 187.76 €
 ```
 
 ---
 
 # 💰 Einzahlung
 
-Der Benutzer gibt einen Betrag ein:
+Bei einer Einzahlung wird ein Betrag eingegeben:
 
-```
+```text
 💰 Einzahlung
-Betrag: 3.76
+Betrag: 25.50
 ```
 
 Der Automat:
 
-1. wandelt den Betrag in **Cent** um
-2. addiert ihn zum aktuellen Guthaben
-3. verteilt das Geld automatisch auf Münzen
-
-Der verwendete Algorithmus entspricht dem **Greedy-Algorithmus** aus dem ursprünglichen Python-Script.
+1. wandelt den Betrag in **Cent**
+2. addiert ihn zum Kontostand
+3. verteilt das Geld automatisch auf Münzen und Scheine
 
 ---
 
 # 💸 Auszahlung
 
-Bei einer Auszahlung kann der Benutzer wählen:
+Bei einer Auszahlung kann ein Betrag gewählt werden:
 
-```
-1 20 €
-2 50 €
-3 100 €
-4 Anderer Betrag
+```text
+┌──────────────────────────────┐
+│ 💸 Auszahlung wählen         │
+│                              │
+│ 1 5 €                        │
+│ 2 10 €                       │
+│ 3 20 €                       │
+│ 4 50 €                       │
+│ 5 100 €                      │
+│ 6 Anderer Betrag             │
+└──────────────────────────────┘
 ```
 
-Wenn genügend Guthaben vorhanden ist:
-
-```
-💸 Geld wird ausgegeben...
-████████████████████
-Bitte entnehmen Sie Ihr Geld
-```
+Wenn genügend Guthaben vorhanden ist, wird das Geld ausgegeben.
 
 ---
 
 # 📈 Zinsen
 
-Der Automat kann **Zinsen auf das Guthaben gutschreiben**.
+Der Automat kann **Zinsen auf das Guthaben berechnen**.
 
-Der Zinssatz ist aktuell:
+Aktueller Zinssatz:
 
-```
+```text
 1 %
 ```
 
-Die Zinsen werden automatisch auf das Guthaben aufgeschlagen.
+Die Zinsen werden zum Kontostand addiert.
 
 ---
 
@@ -219,7 +273,7 @@ Die Zinsen werden automatisch auf das Guthaben aufgeschlagen.
 
 Alle Konten werden automatisch gespeichert in:
 
-```
+```text
 accounts.json
 ```
 
@@ -234,10 +288,12 @@ Beispiel:
     "failedPinAttempts": 0,
     "isLocked": false,
     "accCoins": {
-      "2": 3,
-      "1": 1,
-      "0.5": 1,
-      "0.2": 1
+      "100": 1,
+      "50": 1,
+      "20": 1,
+      "10": 1,
+      "5": 1,
+      "2": 1
     }
   }
 }
@@ -245,63 +301,64 @@ Beispiel:
 
 ---
 
-# 🗂 Projektstruktur
+# 🧪 Tests ausführen (xUnit)
 
+Dieses Projekt enthält **automatisierte Tests** im Ordner:
+
+```text
+Bankautomat.Tests
 ```
-Bankautomat
-│
-├── Controllers
-│   └── BankController.cs
-│
-├── Services
-│   ├── BankService.cs
-│   └── InterestService.cs
-│
-├── Interfaces
-│   ├── IBankService.cs
-│   ├── IInterestService.cs
-│   └── IStorage.cs
-│
-├── Storage
-│   └── JsonStorage.cs
-│
-├── Models
-│   ├── Account.cs
-│   └── CustomerType.cs
-│
-├── Data
-│   └── CoinDefinitions.cs
-│
-├── UI
-│   ├── AsciiATM.cs
-│   └── ConsoleMenu.cs
-│
-├── Utils
-│   └── InputValidator.cs
-│
-└── Program.cs
+
+Die Tests prüfen u.a.:
+
+* Einzahlung
+* Auszahlung
+* Kontostandberechnung
+* Münzverteilung (Greedy-Algorithmus)
+* Zinsberechnung
+* Kontoerstellung
+
+---
+
+## Tests starten
+
+Im Root-Ordner ausführen:
+
+```bash
+dotnet test
+```
+
+---
+
+## Erwartete Ausgabe
+
+```text
+Starting test execution...
+
+Passed! 6 tests passed
 ```
 
 ---
 
 # 🧠 Architektur
 
-Das Projekt verwendet eine einfache **Layer-Architektur**:
+Das Projekt folgt einer einfachen **Layer-Architektur**.
 
-| Ebene      | Aufgabe                         |
-| ---------- | ------------------------------- |
-| Program    | Einstiegspunkt                  |
-| Controller | Steuerung der Programmlogik     |
-| Services   | Geschäftslogik (Bankfunktionen) |
-| Interfaces | Verträge zwischen Komponenten   |
-| Storage    | Speicherung der Daten           |
-| Models     | Datenstrukturen                 |
-| UI         | Konsolenoberfläche              |
-| Utils      | Eingabevalidierung              |
+| Layer      | Aufgabe                       |
+| ---------- | ----------------------------- |
+| Program    | Einstiegspunkt                |
+| Controller | Steuerung der Programmlogik   |
+| Services   | Geschäftslogik                |
+| Interfaces | Verträge zwischen Komponenten |
+| Storage    | Datenpersistenz               |
+| Models     | Datenmodelle                  |
+| UI         | Console Oberfläche            |
+| Utils      | Eingabevalidierung            |
+| Tests      | automatisierte Tests          |
 
 ---
 
-# 🎯 Lernziele
+# 🎯 Lernziele des Projekts
 
 Dieses Projekt demonstriert:
 
@@ -310,17 +367,17 @@ Dieses Projekt demonstriert:
 * Verwendung von **Interfaces**
 * Trennung von **Business Logic und UI**
 * **Controller Pattern**
-* JSON-Speicherung mit `System.Text.Json`
-* einfache **Banklogik**
-* Implementierung eines **Greedy-Algorithmus**
+* JSON-Datenpersistenz
+* **Greedy Algorithmus** für Münzverteilung
+* **Unit Testing mit xUnit**
 
 ---
 
 # ⚠ Hinweis
 
-Dieses Projekt dient ausschließlich **Lern- und Demonstrationszwecken**.
+Dieses Projekt ist ein **Lernprojekt** und kein echtes Bankensystem.
 
-Es enthält keine echten Sicherheitsmechanismen und ist **kein reales Bankensystem**.
+Es enthält keine echten Sicherheitsmechanismen und dient ausschließlich Demonstrationszwecken.
 
 ---
 
@@ -331,4 +388,5 @@ Schulungsprojekt zur Einführung in:
 * C#
 * .NET Entwicklung
 * Softwarearchitektur
-* Konsolenanwendungen
+* Unit Testing
+* Konsolen
