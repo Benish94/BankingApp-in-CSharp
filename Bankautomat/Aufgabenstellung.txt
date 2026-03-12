@@ -1,7 +1,0 @@
-1. Anmeldeprozess ausarbeiten
-2. Das Programm soll unterscheiden zwischen Bestandskunden und Fremdkunden
-3. Fremdkunden können nur Geld abheben
-4. Bestandskunden können Geld abheben und den Kontostand einsehen
-5. Accounts einrichten, der die Informationen speichert
-6. Ein bisschen Logik einbauen für den Abbuchungsvorgang
-7. Bank bekommt noch eine Klasse zur Zinsausschüttung auf den aktuellen Kontostand
