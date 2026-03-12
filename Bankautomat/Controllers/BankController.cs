@@ -1,0 +1,286 @@
+using Bankautomat.Interfaces;
+using Bankautomat.Models;
+using Bankautomat.Utils;
+using Bankautomat.UI;
+using Bankautomat.Data;
+
+namespace Bankautomat.Controllers;
+
+public class BankController
+{
+    private readonly IBankService bank;
+    private readonly IInterestService interest;
+
+    public BankController(IBankService bank, IInterestService interest)
+    {
+        this.bank = bank;
+        this.interest = interest;
+    }
+
+    public void Run()
+    {
+        while (true)
+        {
+            Console.Clear();
+
+            AsciiATM.ShowWelcome();
+
+            int choice = ConsoleMenu.ShowMainMenu();
+
+            switch (choice)
+            {
+                case 1:
+                    LoginCustomer();
+                    break;
+
+                case 2:
+                    WithdrawExternal();
+                    break;
+
+                case 3:
+                    Console.WriteLine("👋 Vielen Dank für Ihren Besuch.");
+                    return;
+
+                default:
+                    Console.WriteLine("Ungültige Auswahl.");
+                    break;
+            }
+        }
+    }
+
+    private void LoginCustomer()
+    {
+        AsciiATM.ShowScreen("Login");
+
+        var accNumber = InputValidator.AskAccountNumber();
+
+        // Konto existiert nicht → neu anlegen
+        if (!bank.Accounts.ContainsKey(accNumber))
+        {
+            Console.WriteLine();
+            Console.WriteLine("⚠ Konto nicht gefunden.");
+            Console.WriteLine("Ein neues Konto wird erstellt.");
+
+            Console.Write("Name eingeben: ");
+            var name = Console.ReadLine() ?? "Kunde";
+
+            Console.WriteLine("Bitte eine 4-stellige PIN festlegen.");
+
+            var pin = InputValidator.AskPin();
+
+            var newAccount = bank.RegisterAccount(accNumber, name, pin);
+
+            Console.WriteLine("✅ Konto erfolgreich erstellt.");
+            Console.WriteLine();
+
+            HandleExistingCustomer(newAccount);
+            return;
+        }
+
+        var account = bank.Accounts[accNumber];
+
+        if (account.IsLocked)
+        {
+            AsciiATM.ShowError("Konto gesperrt. Bitte Bank kontaktieren.");
+            return;
+        }
+
+        for (int i = 1; i <= 3; i++)
+        {
+            var pin = InputValidator.AskPin();
+
+            if (account.Pin == pin)
+            {
+                account.FailedPinAttempts = 0;
+                bank.Save();
+
+                Console.WriteLine("✅ Login erfolgreich.");
+                Console.WriteLine();
+
+                HandleExistingCustomer(account);
+                return;
+            }
+
+            Console.WriteLine($"❌ Falsche PIN ({i}/3)");
+
+            account.FailedPinAttempts++;
+
+            if (account.FailedPinAttempts >= 3)
+            {
+                account.IsLocked = true;
+                bank.Save();
+
+                AsciiATM.ShowError("Konto wurde aus Sicherheitsgründen gesperrt.");
+                return;
+            }
+        }
+    }
+
+    private void WithdrawExternal()
+    {
+        AsciiATM.ShowScreen("Auszahlung ohne Konto");
+
+        var amount = InputValidator.AskAmount();
+
+        var tempAccount = new Account
+        {
+            Name = "Fremdkunde",
+            CustomerType = CustomerType.External,
+            AccCoins = new()
+        };
+
+        if (!bank.Withdraw(tempAccount, amount))
+            AsciiATM.ShowError("Auszahlung nicht möglich.");
+        else
+            ShowCashAnimation(amount);
+    }
+
+    private void HandleExistingCustomer(Account account)
+    {
+        Console.WriteLine($"\n👋 Willkommen {account.Name}");
+
+        while (true)
+        {
+            int choice = ConsoleMenu.ShowCustomerMenu();
+
+            switch (choice)
+            {
+                case 1:
+                    ShowBalance(account);
+                    break;
+
+                case 2:
+                    Deposit(account);
+                    break;
+
+                case 3:
+                    Withdraw(account);
+                    break;
+
+                case 4:
+                    AddInterest(account);
+                    break;
+
+                case 5:
+                    AsciiATM.EjectCard();
+                    return;
+
+                default:
+                    Console.WriteLine("Ungültige Auswahl.");
+                    break;
+            }
+        }
+    }
+
+    private void ShowBalance(Account account)
+    {
+        Console.WriteLine();
+        Console.WriteLine("Aktueller Kontostand:");
+        Console.WriteLine();
+
+        Console.WriteLine("Wert      | Anzahl");
+        Console.WriteLine("-------------------");
+
+        foreach (var coin in CoinDefinitions.Coins)
+        {
+            int count = account.AccCoins[coin.Key];
+
+            Console.WriteLine($"{coin.Label,-8} | {count,6}");
+        }
+
+        Console.WriteLine("-------------------");
+
+        var total = bank.GetTotalCents(account);
+
+        Console.WriteLine($"Gesamt: {total / 100m:0.00} €");
+        Console.WriteLine();
+    }
+
+    private void Deposit(Account account)
+    {
+        Console.WriteLine();
+        Console.WriteLine("💰 Einzahlung");
+
+        var amount = InputValidator.AskAmount();
+
+        bank.Deposit(account, amount);
+
+        Console.WriteLine();
+        Console.WriteLine($"✅ Einzahlung erfolgreich: {amount:0.00} €");
+
+        ShowBalance(account);
+    }
+
+    private void Withdraw(Account account)
+    {
+        int choice = ConsoleMenu.ShowWithdrawMenu();
+
+        decimal amount = 0;
+
+        switch (choice)
+        {
+            case 1:
+                amount = 5;
+                break;
+
+            case 2:
+                amount = 10;
+                break;
+
+            case 3:
+                amount = 20;
+                break;
+
+            case 4:
+                amount = 50;
+                break;
+
+            case 5:
+                amount = 100;
+                break;
+
+            case 6:
+                amount = InputValidator.AskAmount();
+                break;
+
+            default:
+                Console.WriteLine("Ungültige Auswahl.");
+                return;
+        }
+
+        if (!bank.Withdraw(account, amount))
+        {
+            AsciiATM.ShowError("Nicht genug Guthaben.");
+            return;
+        }
+
+        ShowCashAnimation(amount);
+        ShowBalance(account);
+    }
+
+    private void AddInterest(Account account)
+    {
+        var interestAmount = interest.CalculateInterest(account);
+
+        bank.Redistribute(account,
+            bank.GetTotalCents(account) + interestAmount);
+
+        Console.WriteLine($"📈 Zinsen gutgeschrieben: {interestAmount / 100m:0.00} €");
+    }
+
+    private void ShowCashAnimation(decimal amount)
+    {
+        Console.WriteLine();
+        Console.WriteLine("💸 Geld wird ausgegeben...");
+
+        for (int i = 0; i < 20; i++)
+        {
+            Console.Write("█");
+            Thread.Sleep(40);
+        }
+
+        Console.WriteLine();
+        Console.WriteLine($"✅ Bitte entnehmen Sie Ihre {amount:0.00} €");
+        Console.WriteLine();
+    }
+}
