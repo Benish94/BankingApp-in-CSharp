@@ -1,125 +1,175 @@
-# Münzautomaten / Bank Console Anwendung (.NET 8)
+# 🏧 Bankautomat – C# Console Projekt (.NET 8)
 
-Dieses Projekt ist eine einfache Bank-Simulation als **Console-Anwendung in C# (.NET 8)**.
-Es wurde als **Schulungsprojekt** entwickelt, um grundlegende Konzepte von C# und Softwarearchitektur zu demonstrieren.
+Dieses Projekt ist eine **Bankautomaten-Simulation als Console-Anwendung in C#**.
+Es wurde als **Schulungsprojekt** entwickelt, um grundlegende Konzepte der Softwareentwicklung mit **.NET 8** zu demonstrieren.
 
-Die Anwendung ermöglicht es Benutzern:
+Die Anwendung simuliert typische Funktionen eines Geldautomaten:
 
-* sich mit einer **Kontonummer anzumelden**
-* zwischen **Bestandskunden und Fremdkunden** zu unterscheiden
-* **Kontostände einzusehen**
-* **Geld abzuheben**
-* **Zinsen auf Kontostände zu berechnen**
-* Accounts persistent in einer **JSON-Datei** zu speichern
+* Anmeldung mit **Kontonummer und PIN**
+* Anzeige des **Kontostands**
+* **Geld abheben** (inkl. Schnellauszahlung)
+* **Zinsen gutschreiben**
+* **Kontosperre nach 3 falschen PIN-Eingaben**
+* Speicherung der Kontodaten in einer **JSON-Datei**
+
+Zusätzlich enthält das Projekt eine **ASCII-Oberfläche**, die das Verhalten eines echten Bankautomaten simuliert.
 
 ---
 
-# Voraussetzungen
+# 📦 Voraussetzungen
 
 Installiert sein muss:
 
-* **.NET SDK 8.0.418**
+* **.NET SDK 8.x**
 
-Prüfen mit:
+Installation prüfen:
 
-```bash
+```
 dotnet --version
 ```
 
-Falls nicht installiert:
+Beispielausgabe:
+
+```
+8.0.xxx
+```
+
+Download (falls nicht installiert):
+
 https://dotnet.microsoft.com/download
 
 ---
 
-# Projekt starten
+# 🚀 Projekt starten
 
 Im Projektordner ausführen:
 
-```bash
+```
+dotnet build
 dotnet run
 ```
 
-Die Anwendung startet anschließend im Terminal / der Konsole.
+Das Programm startet anschließend im Terminal.
 
 ---
 
-# Anmeldung
+# 🏧 Funktionsübersicht
 
-Beim Start fordert das Programm zur Eingabe einer **8-stelligen Kontonummer** auf.
+## Startmenü
+
+Beim Start erscheint das Hauptmenü des Bankautomaten:
+
+```
+🏧 BANKAUTOMAT
+
+1 Konto verwenden
+2 Auszahlung ohne Konto
+3 Beenden
+```
+
+---
+
+## 💳 Login (Bestandskunden)
+
+Der Login erfolgt mit:
+
+* **Kontonummer (8-stellig)**
+* **PIN (4-stellig)**
 
 Beispiel:
 
 ```
-Kontonummer (8 Ziffern):
-12345678
+Kontonummer: 12345678
+PIN: ****
 ```
 
-Das System unterscheidet zwei Kundentypen.
+### Sicherheit
+
+* Nach **3 falschen PIN-Eingaben** wird das Konto **gesperrt**.
+
+```
+❌ Falsche PIN (3/3)
+❌ Konto wurde aus Sicherheitsgründen gesperrt
+```
 
 ---
 
-# Kundentypen
+## 💰 Kundenmenü
 
-## Bestandskunde
-
-Ein Bestandskunde besitzt bereits ein Konto im System.
-
-Mögliche Funktionen:
+Nach erfolgreichem Login:
 
 ```
+💳 Kundenmenü
+
 1 Kontostand anzeigen
-2 Auszahlung
+2 Geld abheben
 3 Zinsen gutschreiben
 4 Logout
 ```
 
-### Kontostand anzeigen
+---
 
-Zeigt den aktuellen Kontostand des Kontos.
+## 💸 Geld abheben
 
-### Auszahlung
+Beim Abheben kann zwischen einer **Schnellauszahlung** oder einem eigenen Betrag gewählt werden.
 
-Ein Betrag wird vom Konto abgehoben.
+```
+💸 Auszahlung wählen
 
-### Zinsen gutschreiben
+1 20 €
+2 50 €
+3 100 €
+4 Anderer Betrag
+```
 
-Die Bank kann Zinsen auf den aktuellen Kontostand berechnen.
+Während der Auszahlung erscheint eine kleine Animation:
+
+```
+💸 Geld wird ausgegeben...
+████████████████████
+Bitte entnehmen Sie Ihr Geld
+```
 
 ---
 
-## Fremdkunde
+## 📈 Zinsen gutschreiben
 
-Wenn eine eingegebene Kontonummer **nicht existiert**, wird der Benutzer als Fremdkunde behandelt.
-
-Fremdkunden können:
-
-* **nur Geld abheben**
-
-Sie haben **keinen Zugriff auf Kontostände oder Zinsfunktionen**.
+Die Bank kann auf das aktuelle Guthaben **Zinsen berechnen und gutschreiben**.
 
 ---
 
-# Speicherung der Konten
+## 👤 Auszahlung ohne Konto
 
-Alle Kontodaten werden in der Datei gespeichert:
+Auch Fremdkunden können Geld abheben:
+
+```
+Auszahlung ohne Konto
+Betrag eingeben:
+```
+
+---
+
+# 💾 Datenspeicherung
+
+Alle Konten werden automatisch in einer JSON-Datei gespeichert:
 
 ```
 accounts.json
 ```
 
-Diese Datei wird automatisch erstellt, sobald ein Konto gespeichert wird.
-
-Beispielstruktur:
+Beispiel:
 
 ```json
 {
   "12345678": {
-    "Name": "Max",
-    "CustomerType": 0,
-    "AccCoins": {
-      "2": 3,
-      "1": 1,
-      "0.5": 0
+    "name": "Max",
+    "pin": "1234",
+    "customerType": 0,
+    "failedPinAttempts": 0,
+    "isLocked": false,
+    "accCoins": {
+      "2": 4,
+      "1": 3
     }
   }
 }
@@ -127,12 +177,19 @@ Beispielstruktur:
 
 ---
 
-# Projektstruktur
+# 🗂 Projektstruktur
 
 ```
-CoinMachine
+Bankautomat
 │
-├─ Program.cs
+├─ Controllers
+│   └─ BankController.cs
+│
+├─ Interfaces
+│   ├─ IBankService.cs
+│   ├─ IInterestService.cs
+│   └─ IStorage.cs
+│
 ├─ Models
 │   ├─ Account.cs
 │   └─ CustomerType.cs
@@ -144,49 +201,48 @@ CoinMachine
 ├─ Storage
 │   └─ JsonStorage.cs
 │
-└─ Data
-    └─ CoinDefinitions.cs
+├─ UI
+│   ├─ AsciiATM.cs
+│   └─ ConsoleMenu.cs
+│
+├─ Utils
+│   └─ InputValidator.cs
+│
+├─ Data
+│   └─ CoinDefinitions.cs
+│
+└─ Program.cs
 ```
-
-### Beschreibung
-
-| Ordner     | Inhalt                             |
-| ---------- | ---------------------------------- |
-| Models     | Datenmodelle der Anwendung         |
-| Services   | Geschäftslogik der Bank            |
-| Storage    | Laden und Speichern der JSON Daten |
-| Data       | Definition der Münzwerte           |
-| Program.cs | Einstiegspunkt und Konsolenmenü    |
 
 ---
 
-# Lernziele des Projekts
+# 🧠 Lernziele des Projekts
 
-Dieses Projekt demonstriert folgende Konzepte:
+Dieses Projekt zeigt folgende Konzepte der Softwareentwicklung:
 
-* C# Grundlagen
-* Arbeiten mit **.NET 8**
-* **Console Anwendungen**
-* **Dateispeicherung mit JSON**
-* einfache **Softwarearchitektur**
-* Trennung von **Models, Services und Storage**
+* **C# Console Anwendungen**
+* **.NET 8 Projektstruktur**
+* Arbeiten mit **Interfaces**
+* Trennung von **Business Logic und UI**
+* **Controller Pattern**
+* JSON Speicherung mit **System.Text.Json**
 * einfache **Banklogik**
 
 ---
 
-# Hinweise
+# ⚠ Hinweis
 
-Dieses Projekt ist **kein echtes Bankensystem** und dient ausschließlich zu Lernzwecken.
+Dieses Projekt dient ausschließlich **Lern- und Demonstrationszwecken**.
 
-Es enthält keine:
-
-* Sicherheitsmechanismen
-* Verschlüsselung
-* Authentifizierung
-* Datenbankanbindung
+Es enthält **keine echten Sicherheitsmechanismen** und ist **kein echtes Bankensystem**.
 
 ---
 
-# Autor
+# 👨‍💻 Autor
 
-Schulungsprojekt für C# / .NET Entwicklung.
+Schulungsprojekt zur Einführung in:
+
+* C#
+* .NET Architektur
+* Softwarestrukturierung
+* Konsolenanwendungen
