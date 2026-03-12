@@ -8,7 +8,7 @@ public class Account
 
     public CustomerType CustomerType { get; set; }
 
-    public Dictionary<string, int> AccCoins { get; set; } = new();
+    public Dictionary<string,int> AccCoins { get; set; } = new();
 
     public int FailedPinAttempts { get; set; } = 0;
 

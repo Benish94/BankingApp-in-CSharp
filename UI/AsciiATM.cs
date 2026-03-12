@@ -4,45 +4,37 @@ public static class AsciiATM
 {
     public static void ShowWelcome()
     {
-        Console.Clear();
-
-        Console.WriteLine("╔══════════════════════════════════════╗");
-        Console.WriteLine("║                                      ║");
-        Console.WriteLine("║            🏧 BANKAUTOMAT            ║");
-        Console.WriteLine("║                                      ║");
-        Console.WriteLine("║       Willkommen bei Ihrer Bank      ║");
-        Console.WriteLine("║                                      ║");
-        Console.WriteLine("╚══════════════════════════════════════╝");
         Console.WriteLine();
-    }
-
-    public static void InsertCard()
-    {
-        Console.WriteLine("┌──────────────────────────────────────┐");
-        Console.WriteLine("│ 💳 Bitte Karte einlegen               │");
-        Console.WriteLine("└──────────────────────────────────────┘");
+        Console.WriteLine("╔════════════════════════════════╗");
+        Console.WriteLine("║                                ║");
+        Console.WriteLine("║          🏧 BANKAUTOMAT         ║");
+        Console.WriteLine("║                                ║");
+        Console.WriteLine("║   Willkommen bei Ihrer Bank    ║");
+        Console.WriteLine("║                                ║");
+        Console.WriteLine("╚════════════════════════════════╝");
         Console.WriteLine();
     }
 
     public static void ShowScreen(string title)
     {
         Console.WriteLine();
-        Console.WriteLine("========================================");
+        Console.WriteLine("=================================");
         Console.WriteLine($" {title}");
-        Console.WriteLine("========================================");
-    }
-
-    public static void ShowSuccess(string text)
-    {
-        Console.WriteLine();
-        Console.WriteLine($"✅ {text}");
+        Console.WriteLine("=================================");
         Console.WriteLine();
     }
 
-    public static void ShowError(string text)
+    public static void ShowError(string message)
     {
         Console.WriteLine();
-        Console.WriteLine($"❌ {text}");
+        Console.WriteLine($"❌ {message}");
+        Console.WriteLine();
+    }
+
+    public static void ShowSuccess(string message)
+    {
+        Console.WriteLine();
+        Console.WriteLine($"✅ {message}");
         Console.WriteLine();
     }
 

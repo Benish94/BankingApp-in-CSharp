@@ -20,6 +20,8 @@ public class BankController
     {
         while (true)
         {
+            Console.Clear();
+
             AsciiATM.ShowWelcome();
 
             int choice = ConsoleMenu.ShowMainMenu();
@@ -51,13 +53,30 @@ public class BankController
 
         var accNumber = InputValidator.AskAccountNumber();
 
-        var account = bank.Login(accNumber);
-
-        if (account.CustomerType == CustomerType.External)
+        // Konto existiert nicht → neu anlegen
+        if (!bank.Accounts.ContainsKey(accNumber))
         {
-            AsciiATM.ShowError("Konto nicht gefunden.");
+            Console.WriteLine();
+            Console.WriteLine("⚠ Konto nicht gefunden.");
+            Console.WriteLine("Ein neues Konto wird erstellt.");
+
+            Console.Write("Name eingeben: ");
+            var name = Console.ReadLine() ?? "Kunde";
+
+            Console.WriteLine("Bitte eine 4-stellige PIN festlegen.");
+
+            var pin = InputValidator.AskPin();
+
+            var newAccount = bank.RegisterAccount(accNumber, name, pin);
+
+            Console.WriteLine("✅ Konto erfolgreich erstellt.");
+            Console.WriteLine();
+
+            HandleExistingCustomer(newAccount);
             return;
         }
+
+        var account = bank.Accounts[accNumber];
 
         if (account.IsLocked)
         {
@@ -73,6 +92,9 @@ public class BankController
             {
                 account.FailedPinAttempts = 0;
                 bank.Save();
+
+                Console.WriteLine("✅ Login erfolgreich.");
+                Console.WriteLine();
 
                 HandleExistingCustomer(account);
                 return;
@@ -109,7 +131,7 @@ public class BankController
         if (!bank.Withdraw(tempAccount, amount))
             AsciiATM.ShowError("Auszahlung nicht möglich.");
         else
-            AsciiATM.ShowSuccess($"{amount:0.00} € wurden ausgezahlt.");
+            ShowCashAnimation(amount);
     }
 
     private void HandleExistingCustomer(Account account)
@@ -127,14 +149,18 @@ public class BankController
                     break;
 
                 case 2:
-                    Withdraw(account);
+                    Deposit(account);
                     break;
 
                 case 3:
-                    AddInterest(account);
+                    Withdraw(account);
                     break;
 
                 case 4:
+                    AddInterest(account);
+                    break;
+
+                case 5:
                     AsciiATM.EjectCard();
                     return;
 
@@ -147,9 +173,26 @@ public class BankController
 
     private void ShowBalance(Account account)
     {
+        Console.WriteLine();
+        Console.WriteLine("Aktueller Kontostand:");
+        Console.WriteLine();
+
+        Console.WriteLine("Wert      | Anzahl");
+        Console.WriteLine("-------------------");
+
+        foreach (var coin in CoinDefinitions.Coins)
+        {
+            int count = account.AccCoins[coin.Key];
+
+            Console.WriteLine($"{coin.Label,-8} | {count,6}");
+        }
+
+        Console.WriteLine("-------------------");
+
         var total = bank.GetTotalCents(account);
 
-        Console.WriteLine($"💰 Kontostand: {total / 100m:0.00} €");
+        Console.WriteLine($"Gesamt: {total / 100m:0.00} €");
+        Console.WriteLine();
     }
 
     private void Withdraw(Account account)
@@ -188,6 +231,8 @@ public class BankController
         }
 
         ShowCashAnimation(amount);
+
+        ShowBalance(account);
     }
 
     private void AddInterest(Account account)

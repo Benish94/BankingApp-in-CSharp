@@ -1,7 +1,7 @@
+using Bankautomat.Controllers;
 using Bankautomat.Services;
 using Bankautomat.Storage;
 using Bankautomat.Interfaces;
-using Bankautomat.Controllers;
 
 IStorage storage = new JsonStorage();
 IBankService bankService = new BankService(storage);

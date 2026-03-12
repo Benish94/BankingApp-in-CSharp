@@ -1,18 +1,21 @@
-# 🏧 Bankautomat – C# Console Projekt (.NET 8)
+# 🏧 Bankautomat – C# Console Anwendung (.NET 8)
 
-Dieses Projekt ist eine **Bankautomaten-Simulation als Console-Anwendung in C#**.
+Dieses Projekt ist eine **Simulation eines Bankautomaten** als **C# Console-Anwendung**.
 Es wurde als **Schulungsprojekt** entwickelt, um grundlegende Konzepte der Softwareentwicklung mit **.NET 8** zu demonstrieren.
 
-Die Anwendung simuliert typische Funktionen eines Geldautomaten:
+Der Automat ermöglicht:
 
 * Anmeldung mit **Kontonummer und PIN**
-* Anzeige des **Kontostands**
-* **Geld abheben** (inkl. Schnellauszahlung)
+* **automatische Kontoerstellung**, wenn eine Kontonummer noch nicht existiert
+* **Kontostand anzeigen**
+* **Geld einzahlen**
+* **Geld abheben**
 * **Zinsen gutschreiben**
-* **Kontosperre nach 3 falschen PIN-Eingaben**
-* Speicherung der Kontodaten in einer **JSON-Datei**
+* automatische **Münzverteilung über einen Algorithmus**
+* **Kontosperre nach 3 falschen PIN-Versuchen**
+* Speicherung aller Daten in einer **JSON-Datei**
 
-Zusätzlich enthält das Projekt eine **ASCII-Oberfläche**, die das Verhalten eines echten Bankautomaten simuliert.
+Zusätzlich besitzt das Programm eine **ASCII-basierte Oberfläche**, die einen echten Geldautomaten simuliert.
 
 ---
 
@@ -20,11 +23,11 @@ Zusätzlich enthält das Projekt eine **ASCII-Oberfläche**, die das Verhalten e
 
 Installiert sein muss:
 
-* **.NET SDK 8.x**
+* **.NET SDK 8**
 
 Installation prüfen:
 
-```
+```bash
 dotnet --version
 ```
 
@@ -34,7 +37,7 @@ Beispielausgabe:
 8.0.xxx
 ```
 
-Download (falls nicht installiert):
+Download falls nötig:
 
 https://dotnet.microsoft.com/download
 
@@ -44,12 +47,12 @@ https://dotnet.microsoft.com/download
 
 Im Projektordner ausführen:
 
-```
+```bash
 dotnet build
 dotnet run
 ```
 
-Das Programm startet anschließend im Terminal.
+Die Anwendung startet anschließend im Terminal.
 
 ---
 
@@ -57,35 +60,60 @@ Das Programm startet anschließend im Terminal.
 
 ## Startmenü
 
-Beim Start erscheint das Hauptmenü des Bankautomaten:
+Beim Start erscheint das Hauptmenü des Automaten:
 
 ```
-🏧 BANKAUTOMAT
-
-1 Konto verwenden
-2 Auszahlung ohne Konto
-3 Beenden
+┌──────────────────────────────┐
+│ 🏧 BANKAUTOMAT               │
+│                              │
+│ 1 Konto verwenden            │
+│ 2 Auszahlung ohne Konto      │
+│ 3 Beenden                    │
+└──────────────────────────────┘
 ```
 
 ---
 
-## 💳 Login (Bestandskunden)
+# 💳 Konto verwenden
 
-Der Login erfolgt mit:
+Der Benutzer gibt eine **8-stellige Kontonummer** ein.
 
-* **Kontonummer (8-stellig)**
-* **PIN (4-stellig)**
+```
+Kontonummer (8 Ziffern): 12345678
+```
+
+### Konto existiert nicht
+
+Wenn die Kontonummer noch nicht vorhanden ist:
+
+* wird automatisch ein **neues Konto erstellt**
+* Benutzer legt **Name und PIN fest**
 
 Beispiel:
 
 ```
-Kontonummer: 12345678
-PIN: ****
+⚠ Konto nicht gefunden.
+Ein neues Konto wird erstellt.
+
+Name eingeben: Max
+PIN (4 Stellen): ****
+
+✅ Konto erfolgreich erstellt.
 ```
 
-### Sicherheit
+---
 
-* Nach **3 falschen PIN-Eingaben** wird das Konto **gesperrt**.
+### Konto existiert
+
+Wenn das Konto existiert, erfolgt die **PIN-Abfrage**:
+
+```
+PIN (4 Stellen): ****
+```
+
+### Sicherheitsfunktion
+
+Nach **3 falschen PIN-Versuchen** wird das Konto gesperrt:
 
 ```
 ❌ Falsche PIN (3/3)
@@ -94,35 +122,76 @@ PIN: ****
 
 ---
 
-## 💰 Kundenmenü
+# 💳 Kundenmenü
 
-Nach erfolgreichem Login:
+Nach erfolgreichem Login erscheint das Kundenmenü:
 
 ```
-💳 Kundenmenü
-
-1 Kontostand anzeigen
-2 Geld abheben
-3 Zinsen gutschreiben
-4 Logout
+┌──────────────────────────────┐
+│ 💳 Kundenmenü                │
+│                              │
+│ 1 Kontostand anzeigen        │
+│ 2 Einzahlung                 │
+│ 3 Auszahlung                 │
+│ 4 Zinsen                     │
+│ 5 Logout                     │
+└──────────────────────────────┘
 ```
 
 ---
 
-## 💸 Geld abheben
+# 💰 Kontostand
 
-Beim Abheben kann zwischen einer **Schnellauszahlung** oder einem eigenen Betrag gewählt werden.
+Der Kontostand wird als **Münztabelle** angezeigt:
 
 ```
-💸 Auszahlung wählen
+Wert      | Anzahl
+-------------------
+2.00 €    |      3
+1.00 €    |      1
+0.50 €    |      1
+0.20 €    |      1
+0.10 €    |      0
+0.05 €    |      0
+0.02 €    |      0
+0.01 €    |      0
+-------------------
+Gesamt: 7.70 €
+```
 
+---
+
+# 💰 Einzahlung
+
+Der Benutzer gibt einen Betrag ein:
+
+```
+💰 Einzahlung
+Betrag: 3.76
+```
+
+Der Automat:
+
+1. wandelt den Betrag in **Cent** um
+2. addiert ihn zum aktuellen Guthaben
+3. verteilt das Geld automatisch auf Münzen
+
+Der verwendete Algorithmus entspricht dem **Greedy-Algorithmus** aus dem ursprünglichen Python-Script.
+
+---
+
+# 💸 Auszahlung
+
+Bei einer Auszahlung kann der Benutzer wählen:
+
+```
 1 20 €
 2 50 €
 3 100 €
 4 Anderer Betrag
 ```
 
-Während der Auszahlung erscheint eine kleine Animation:
+Wenn genügend Guthaben vorhanden ist:
 
 ```
 💸 Geld wird ausgegeben...
@@ -132,26 +201,23 @@ Bitte entnehmen Sie Ihr Geld
 
 ---
 
-## 📈 Zinsen gutschreiben
+# 📈 Zinsen
 
-Die Bank kann auf das aktuelle Guthaben **Zinsen berechnen und gutschreiben**.
+Der Automat kann **Zinsen auf das Guthaben gutschreiben**.
 
----
-
-## 👤 Auszahlung ohne Konto
-
-Auch Fremdkunden können Geld abheben:
+Der Zinssatz ist aktuell:
 
 ```
-Auszahlung ohne Konto
-Betrag eingeben:
+1 %
 ```
+
+Die Zinsen werden automatisch auf das Guthaben aufgeschlagen.
 
 ---
 
 # 💾 Datenspeicherung
 
-Alle Konten werden automatisch in einer JSON-Datei gespeichert:
+Alle Konten werden automatisch gespeichert in:
 
 ```
 accounts.json
@@ -168,8 +234,10 @@ Beispiel:
     "failedPinAttempts": 0,
     "isLocked": false,
     "accCoins": {
-      "2": 4,
-      "1": 3
+      "2": 3,
+      "1": 1,
+      "0.5": 1,
+      "0.2": 1
     }
   }
 }
@@ -182,51 +250,69 @@ Beispiel:
 ```
 Bankautomat
 │
-├─ Controllers
-│   └─ BankController.cs
+├── Controllers
+│   └── BankController.cs
 │
-├─ Interfaces
-│   ├─ IBankService.cs
-│   ├─ IInterestService.cs
-│   └─ IStorage.cs
+├── Services
+│   ├── BankService.cs
+│   └── InterestService.cs
 │
-├─ Models
-│   ├─ Account.cs
-│   └─ CustomerType.cs
+├── Interfaces
+│   ├── IBankService.cs
+│   ├── IInterestService.cs
+│   └── IStorage.cs
 │
-├─ Services
-│   ├─ BankService.cs
-│   └─ InterestService.cs
+├── Storage
+│   └── JsonStorage.cs
 │
-├─ Storage
-│   └─ JsonStorage.cs
+├── Models
+│   ├── Account.cs
+│   └── CustomerType.cs
 │
-├─ UI
-│   ├─ AsciiATM.cs
-│   └─ ConsoleMenu.cs
+├── Data
+│   └── CoinDefinitions.cs
 │
-├─ Utils
-│   └─ InputValidator.cs
+├── UI
+│   ├── AsciiATM.cs
+│   └── ConsoleMenu.cs
 │
-├─ Data
-│   └─ CoinDefinitions.cs
+├── Utils
+│   └── InputValidator.cs
 │
-└─ Program.cs
+└── Program.cs
 ```
 
 ---
 
-# 🧠 Lernziele des Projekts
+# 🧠 Architektur
 
-Dieses Projekt zeigt folgende Konzepte der Softwareentwicklung:
+Das Projekt verwendet eine einfache **Layer-Architektur**:
 
-* **C# Console Anwendungen**
-* **.NET 8 Projektstruktur**
-* Arbeiten mit **Interfaces**
+| Ebene      | Aufgabe                         |
+| ---------- | ------------------------------- |
+| Program    | Einstiegspunkt                  |
+| Controller | Steuerung der Programmlogik     |
+| Services   | Geschäftslogik (Bankfunktionen) |
+| Interfaces | Verträge zwischen Komponenten   |
+| Storage    | Speicherung der Daten           |
+| Models     | Datenstrukturen                 |
+| UI         | Konsolenoberfläche              |
+| Utils      | Eingabevalidierung              |
+
+---
+
+# 🎯 Lernziele
+
+Dieses Projekt demonstriert:
+
+* C# Console Anwendungen
+* .NET 8 Projektstruktur
+* Verwendung von **Interfaces**
 * Trennung von **Business Logic und UI**
 * **Controller Pattern**
-* JSON Speicherung mit **System.Text.Json**
+* JSON-Speicherung mit `System.Text.Json`
 * einfache **Banklogik**
+* Implementierung eines **Greedy-Algorithmus**
 
 ---
 
@@ -234,7 +320,7 @@ Dieses Projekt zeigt folgende Konzepte der Softwareentwicklung:
 
 Dieses Projekt dient ausschließlich **Lern- und Demonstrationszwecken**.
 
-Es enthält **keine echten Sicherheitsmechanismen** und ist **kein echtes Bankensystem**.
+Es enthält keine echten Sicherheitsmechanismen und ist **kein reales Bankensystem**.
 
 ---
 
@@ -243,6 +329,6 @@ Es enthält **keine echten Sicherheitsmechanismen** und ist **kein echtes Banken
 Schulungsprojekt zur Einführung in:
 
 * C#
-* .NET Architektur
-* Softwarestrukturierung
+* .NET Entwicklung
+* Softwarearchitektur
 * Konsolenanwendungen
