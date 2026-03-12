@@ -2,6 +2,7 @@ using Bankautomat.Interfaces;
 using Bankautomat.Models;
 using Bankautomat.Utils;
 using Bankautomat.UI;
+using Bankautomat.Data;
 
 namespace Bankautomat.Controllers;
 
@@ -195,6 +196,21 @@ public class BankController
         Console.WriteLine();
     }
 
+    private void Deposit(Account account)
+    {
+        Console.WriteLine();
+        Console.WriteLine("💰 Einzahlung");
+
+        var amount = InputValidator.AskAmount();
+
+        bank.Deposit(account, amount);
+
+        Console.WriteLine();
+        Console.WriteLine($"✅ Einzahlung erfolgreich: {amount:0.00} €");
+
+        ShowBalance(account);
+    }
+
     private void Withdraw(Account account)
     {
         int choice = ConsoleMenu.ShowWithdrawMenu();
@@ -204,18 +220,26 @@ public class BankController
         switch (choice)
         {
             case 1:
-                amount = 20;
+                amount = 5;
                 break;
 
             case 2:
-                amount = 50;
+                amount = 10;
                 break;
 
             case 3:
-                amount = 100;
+                amount = 20;
                 break;
 
             case 4:
+                amount = 50;
+                break;
+
+            case 5:
+                amount = 100;
+                break;
+
+            case 6:
                 amount = InputValidator.AskAmount();
                 break;
 
@@ -231,7 +255,6 @@ public class BankController
         }
 
         ShowCashAnimation(amount);
-
         ShowBalance(account);
     }
 
