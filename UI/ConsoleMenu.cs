@@ -17,6 +17,26 @@ public static class ConsoleMenu
         return 0;
     }
 
+    public static int ShowWithdrawMenu()
+    {
+        Console.WriteLine();
+        Console.WriteLine("┌──────────────────────────────────────┐");
+        Console.WriteLine("│ 💸 Auszahlung wählen                  │");
+        Console.WriteLine("│                                      │");
+        Console.WriteLine("│ 1️⃣  20 €                              │");
+        Console.WriteLine("│ 2️⃣  50 €                              │");
+        Console.WriteLine("│ 3️⃣  100 €                             │");
+        Console.WriteLine("│ 4️⃣  Anderer Betrag                   │");
+        Console.WriteLine("└──────────────────────────────────────┘");
+
+        Console.Write("Auswahl: ");
+
+        if (int.TryParse(Console.ReadLine(), out int result))
+            return result;
+
+        return 0;
+    }
+
     public static int ShowCustomerMenu()
     {
         Console.WriteLine("┌──────────────────────────────────────┐");

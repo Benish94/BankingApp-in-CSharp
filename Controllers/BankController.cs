@@ -59,15 +59,38 @@ public class BankController
             return;
         }
 
-        var pin = InputValidator.AskPin();
-
-        if (account.Pin != pin)
+        if (account.IsLocked)
         {
-            AsciiATM.ShowError("Falsche PIN.");
+            AsciiATM.ShowError("Konto gesperrt. Bitte Bank kontaktieren.");
             return;
         }
 
-        HandleExistingCustomer(account);
+        for (int i = 1; i <= 3; i++)
+        {
+            var pin = InputValidator.AskPin();
+
+            if (account.Pin == pin)
+            {
+                account.FailedPinAttempts = 0;
+                bank.Save();
+
+                HandleExistingCustomer(account);
+                return;
+            }
+
+            Console.WriteLine($"❌ Falsche PIN ({i}/3)");
+
+            account.FailedPinAttempts++;
+
+            if (account.FailedPinAttempts >= 3)
+            {
+                account.IsLocked = true;
+                bank.Save();
+
+                AsciiATM.ShowError("Konto wurde aus Sicherheitsgründen gesperrt.");
+                return;
+            }
+        }
     }
 
     private void WithdrawExternal()
@@ -86,7 +109,7 @@ public class BankController
         if (!bank.Withdraw(tempAccount, amount))
             AsciiATM.ShowError("Auszahlung nicht möglich.");
         else
-            AsciiATM.ShowSuccess("Auszahlung erfolgreich.");
+            AsciiATM.ShowSuccess($"{amount:0.00} € wurden ausgezahlt.");
     }
 
     private void HandleExistingCustomer(Account account)
@@ -131,12 +154,40 @@ public class BankController
 
     private void Withdraw(Account account)
     {
-        var amount = InputValidator.AskAmount();
+        int choice = ConsoleMenu.ShowWithdrawMenu();
+
+        decimal amount = 0;
+
+        switch (choice)
+        {
+            case 1:
+                amount = 20;
+                break;
+
+            case 2:
+                amount = 50;
+                break;
+
+            case 3:
+                amount = 100;
+                break;
+
+            case 4:
+                amount = InputValidator.AskAmount();
+                break;
+
+            default:
+                Console.WriteLine("Ungültige Auswahl.");
+                return;
+        }
 
         if (!bank.Withdraw(account, amount))
+        {
             AsciiATM.ShowError("Nicht genug Guthaben.");
-        else
-            AsciiATM.ShowSuccess("Auszahlung erfolgreich.");
+            return;
+        }
+
+        ShowCashAnimation(amount);
     }
 
     private void AddInterest(Account account)
@@ -147,5 +198,21 @@ public class BankController
             bank.GetTotalCents(account) + interestAmount);
 
         Console.WriteLine($"📈 Zinsen gutgeschrieben: {interestAmount / 100m:0.00} €");
+    }
+
+    private void ShowCashAnimation(decimal amount)
+    {
+        Console.WriteLine();
+        Console.WriteLine("💸 Geld wird ausgegeben...");
+
+        for (int i = 0; i < 20; i++)
+        {
+            Console.Write("█");
+            Thread.Sleep(40);
+        }
+
+        Console.WriteLine();
+        Console.WriteLine($"✅ Bitte entnehmen Sie Ihre {amount:0.00} €");
+        Console.WriteLine();
     }
 }
