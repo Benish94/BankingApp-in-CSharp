@@ -1,11 +1,12 @@
+using Bankautomat.Interfaces;
 using Bankautomat.Models;
 using Bankautomat.Data;
 
 namespace Bankautomat.Services;
 
-public class InterestService
+public class InterestService : IInterestService
 {
-    private const decimal INTEREST_RATE = 0.01m; // 1 %
+    private const decimal INTEREST_RATE = 0.01m;
 
     public int CalculateInterest(Account account)
     {

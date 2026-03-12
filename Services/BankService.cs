@@ -1,26 +1,27 @@
 using Bankautomat.Models;
-using Bankautomat.Storage;
+using Bankautomat.Interfaces;
 using Bankautomat.Data;
 
 namespace Bankautomat.Services;
 
-public class BankService
+public class BankService : IBankService
 {
-    private readonly JsonStorage storage;
+    private readonly IStorage storage;
 
-    public Dictionary<string,Account> Accounts { get; private set; }
+    public Dictionary<string, Account> Accounts { get; private set; }
 
-    public BankService(JsonStorage storage)
+    public BankService(IStorage storage)
     {
         this.storage = storage;
         Accounts = storage.Load();
     }
 
-    public Account RegisterAccount(string accNumber, string name)
+    public Account RegisterAccount(string accNumber, string name, string pin)
     {
         var account = new Account
         {
             Name = name,
+            Pin = pin,
             CustomerType = CustomerType.Existing,
             AccCoins = CoinDefinitions.CreateEmptyCoins()
         };
@@ -49,8 +50,8 @@ public class BankService
     {
         int sum = 0;
 
-        foreach (var c in account.AccCoins)
-            sum += c.Value * CoinDefinitions.Values[c.Key];
+        foreach (var coin in account.AccCoins)
+            sum += coin.Value * CoinDefinitions.Values[coin.Key];
 
         return sum;
     }
@@ -72,6 +73,8 @@ public class BankService
                 remaining -= use * coin.Value;
             }
         }
+
+        Save();
     }
 
     public bool Withdraw(Account account, decimal amount)

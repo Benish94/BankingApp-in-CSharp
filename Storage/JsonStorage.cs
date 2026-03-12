@@ -1,9 +1,10 @@
 using System.Text.Json;
 using Bankautomat.Models;
+using Bankautomat.Interfaces;
 
 namespace Bankautomat.Storage;
 
-public class JsonStorage
+public class JsonStorage : IStorage
 {
     private const string FILE = "accounts.json";
 
@@ -26,7 +27,7 @@ public class JsonStorage
         }
     }
 
-    public void Save(Dictionary<string,Account> accounts)
+    public void Save(Dictionary<string, Account> accounts)
     {
         var json = JsonSerializer.Serialize(
             accounts,
